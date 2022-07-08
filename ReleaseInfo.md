@@ -1,7 +1,7 @@
 ## Release info:
 ___
 ### Changes:
-- *Change 1*
+- *Primer cambio*
 - *Change n*
 ### Fixes:
 - *Fix 1*
