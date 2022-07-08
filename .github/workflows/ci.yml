@@ -1,4 +1,4 @@
-name: Monolith CI
+name: msCI
 
 env:
   COMMIT_MSG: ${{ github.event.head_commit.message }}
@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build_and_upload_artifact:
+  build_and_publish_release:
 
     runs-on: ubuntu-latest
     
@@ -37,15 +37,10 @@ jobs:
 
     # generar reporte y subirlo como artefacto
     
-    # - uses: actions/upload-artifact@v3
-    #   with:
-    #     name: ${{ env.COMMIT_MSG }}
-    #     path: /home/runner/work/${{ env.REPOSITORY_NAME }}/${{ env.REPOSITORY_NAME }}/target/monolith-build.jar
-    #     retention-days: 10
-
     # enviar notificación con url del reporte
 
-    - uses: ncipollo/release-action@v1
+    - name: Publish Release
+      uses: ncipollo/release-action@v1
       with:
         artifacts: /home/runner/work/${{ env.REPOSITORY_NAME }}/${{ env.REPOSITORY_NAME }}/target/ms-build.jar
         token: ${{ secrets.GITHUB_TOKEN }}
@@ -56,10 +51,9 @@ jobs:
       uses: actions/checkout@v3
       with:
         repository: Obligatorio-ORT-FI-8184-DevOps/DevOps_code
-        # ref: main
         token: ${{ secrets.GH_PAT }}
 
-    - name: Update Build version
+    - name: Update CD release version
       uses: fjogeleit/yaml-update-action@main
       with:
         valueFile: .github/workflows/cd.yml
@@ -67,11 +61,14 @@ jobs:
         value: ${{ env.COMMIT_MSG }}
         repository: Obligatorio-ORT-FI-8184-DevOps/DevOps_code
         branch: main
-        # targetBranch: main
-        # createPR: true
-        # title: 'PR: ${{ env.COMMIT_MSG }}'
         message: ${{ env.REPOSITORY_NAME }}
         token: ${{ secrets.GH_PAT }}
+
+    # - uses: actions/upload-artifact@v3
+    #   with:
+    #     name: ${{ env.COMMIT_MSG }}
+    #     path: /home/runner/work/${{ env.REPOSITORY_NAME }}/${{ env.REPOSITORY_NAME }}/target/monolith-build.jar
+    #     retention-days: 10
 
   # call-deploy-workflow:
   #   uses: Obligatorio-ORT-FI-8184-DevOps/DevOps_code/.github/workflows/cd.yml@main
@@ -80,9 +77,6 @@ jobs:
   #     repositoryName: ${{ github.event.repository.name }}    
       # releaseTag: ${{ env.COMMIT_MSG }}
       # repositoryName: ${{ env.REPOSITORY_NAME }}     
-
-
-######################## generar pull request en repo devops?? ########################
 
     # - name: Find builded jar
     #   run: echo $(find /home/runner/work/msMono/msMono/target/ -type f -name "*.jar")
