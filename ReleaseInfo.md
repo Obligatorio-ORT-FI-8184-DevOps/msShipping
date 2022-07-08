@@ -1,8 +1,7 @@
 ## Release info:
-___
 ### Changes:
-- *Cuarto cambio*
-- *Change n*
+- Otro cambio
+- Change n
 ### Fixes:
-- *Fix 1*
-- *Fix n*
+- Fix 1
+- Fix n
