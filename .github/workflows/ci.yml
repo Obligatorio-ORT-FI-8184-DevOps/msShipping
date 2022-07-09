@@ -6,11 +6,10 @@ env:
 
 on:
   push:
-    branches: [ "main" ]
-    
-concurrency: 
-  group: ${{ github.ref }}
-  cancel-in-progress: true
+    branches:
+      - main
+    paths-ignore: 
+      - .github/workflows/ci.yml
 
 jobs:
   build_and_publish_release:
@@ -47,22 +46,14 @@ jobs:
         bodyFile: "ReleaseInfo.md"
         tag: ${{ env.COMMIT_MSG }}
 
-    - name: Checkout Target Repository
-      uses: actions/checkout@v3
+    - name: Repository Dispatch
+      uses: peter-evans/repository-dispatch@v2
       with:
-        repository: Obligatorio-ORT-FI-8184-DevOps/DevOps_code
         token: ${{ secrets.GH_PAT }}
-
-    - name: Update CD release version
-      uses: fjogeleit/yaml-update-action@main
-      with:
-        valueFile: .github/workflows/cd.yml
-        propertyPath: $.env.RELEASE_TAG
-        value: ${{ env.COMMIT_MSG }}
+        # token: ${{ secrets.REPO_ACCESS_TOKEN }}
         repository: Obligatorio-ORT-FI-8184-DevOps/DevOps_code
-        branch: main
-        message: ${{ env.REPOSITORY_NAME }}
-        token: ${{ secrets.GH_PAT }}
+        event-type: ${{ env.COMMIT_MSG }}
+        client-payload: '{"tag": "${{ env.COMMIT_MSG }}", "repo": "${{ env.REPOSITORY_NAME }}"}'
 
     # - uses: actions/upload-artifact@v3
     #   with:
