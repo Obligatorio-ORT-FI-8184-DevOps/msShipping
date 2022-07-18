@@ -54,7 +54,7 @@ jobs:
       id: newman
       run: |
         mkdir -p testResults
-        newman run .github/tests/payments.json -r htmlextra --reporter-htmlextra-export testResults/testReport.html
+        newman run .github/tests/${{ env.REPOSITORY_NAME }}.postman_collection.json -r htmlextra --reporter-htmlextra-export testResults/testReport.html
 
     - name: Upload report artifact
       if: always()
