@@ -10,11 +10,18 @@ on:
       - main
     paths-ignore: 
       - .github/workflows/ci.yml
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+    paths-ignore: 
+      - .github/workflows/ci.yml
 
 jobs:
   build_and_publish_release:
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     
     steps:
     - name: Checkout code
@@ -27,16 +34,53 @@ jobs:
         distribution: 'temurin'
         cache: maven
         
-    - name: Build with Maven
-      run: mvn -B package --file pom.xml
+    - name: Build with Maven - Code quality & security
+      run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=Obligatorio-ORT-FI-8184-DevOps_${{ env.REPOSITORY_NAME }} -Dsonar.login=${{ secrets.SONAR_TOKEN }}
 
-    # pruebas unitarias
+    - name: Run with Java
+      run: java -jar /home/runner/work/${{ env.REPOSITORY_NAME }}/${{ env.REPOSITORY_NAME }}/target/ms-build.jar --server.port=8080 &
 
-    # pruebas postman
+    - name: Setup NodeJS
+      uses: actions/setup-node@v3
+      with:
+        node-version: 16
+        
+    - name: Install Newman & Reporter
+      run: |
+        npm install -g newman
+        npm install -g newman-reporter-htmlextra
 
-    # generar reporte y subirlo como artefacto
-    
-    # enviar notificación con url del reporte
+    - name: Run postman collection & report
+      id: newman
+      run: |
+        mkdir -p testResults
+        newman run .github/tests/payments.json -r htmlextra --reporter-htmlextra-export testResults/testReport.html
+
+    - name: Upload report artifact
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ env.REPOSITORY_NAME }}-TestReport
+        path: testResults/testReport.html
+        retention-days: 5
+
+    - name: Send telegram message
+      if: always()
+      uses: appleboy/telegram-action@master
+      with:
+        to: ${{ secrets.TELEGRAM_TO }}
+        token: ${{ secrets.TELEGRAM_TOKEN }}
+        document: testResults/testReport.html
+        message: |
+          << CI pipeline - Tests completed >>
+          Trigger user: ${{ github.actor }}
+          Commit message: ${{ env.COMMIT_MSG }}
+          Changes:
+          https://github.com/Obligatorio-ORT-FI-8184-DevOps/${{ env.REPOSITORY_NAME }}/commit/${{github.sha}}
+          Code quality & security:
+          https://sonarcloud.io/summary/overall?id=Obligatorio-ORT-FI-8184-DevOps_${{ env.REPOSITORY_NAME }}
+          Run log and test report:
+          https://github.com/Obligatorio-ORT-FI-8184-DevOps/${{ env.REPOSITORY_NAME }}/actions/runs/${{ github.run_id }}
 
     - name: Publish Release
       uses: ncipollo/release-action@v1
@@ -51,28 +95,6 @@ jobs:
       uses: peter-evans/repository-dispatch@v2
       with:
         token: ${{ secrets.GH_PAT }}
-        # token: ${{ secrets.REPO_ACCESS_TOKEN }}
         repository: Obligatorio-ORT-FI-8184-DevOps/DevOps_code
         event-type: ${{ env.COMMIT_MSG }}
         client-payload: '{"tag": "${{ env.COMMIT_MSG }}", "repo": "${{ env.REPOSITORY_NAME }}"}'
-
-    # - uses: actions/upload-artifact@v3
-    #   with:
-    #     name: ${{ env.COMMIT_MSG }}
-    #     path: /home/runner/work/${{ env.REPOSITORY_NAME }}/${{ env.REPOSITORY_NAME }}/target/monolith-build.jar
-    #     retention-days: 10
-
-  # call-deploy-workflow:
-  #   uses: Obligatorio-ORT-FI-8184-DevOps/DevOps_code/.github/workflows/cd.yml@main
-  #   with:
-  #     releaseTag: ${{ github.event.head_commit.message }}
-  #     repositoryName: ${{ github.event.repository.name }}    
-      # releaseTag: ${{ env.COMMIT_MSG }}
-      # repositoryName: ${{ env.REPOSITORY_NAME }}     
-
-    # - name: Find builded jar
-    #   run: echo $(find /home/runner/work/msMono/msMono/target/ -type f -name "*.jar")
-
-    # - name: Export de variable
-    #   id: imageTag
-    #   run: echo "::set-output name=version::$CONTAINER_IMAGE_VERSION"
