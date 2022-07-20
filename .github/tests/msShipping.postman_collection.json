@@ -6,7 +6,41 @@
 	},
 	"item": [
 		{
-			"name": "Shipping",
+			"name": "ShippingPost",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"    pm.response.to.be.ok;\r",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/shipping/x",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"shipping",
+						"x"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "ShippingGet",
 			"event": [
 				{
 					"listen": "test",
