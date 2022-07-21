@@ -75,7 +75,7 @@ jobs:
         token: ${{ secrets.TELEGRAM_TOKEN }}
         document: testResults/testReport.html
         message: |
-          << CI pipeline - Monolith Tests completed ${{ env.NE }}>>
+          << CI pipeline - ${{ env.REPOSITORY_NAME }} Tests completed ${{ env.NE }}>>
           Trigger user: ${{ github.actor }}
           Commit message: ${{ env.COMMIT_MSG }}
           Changes:
