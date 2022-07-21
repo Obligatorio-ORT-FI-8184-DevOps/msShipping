@@ -60,7 +60,7 @@
 							"})\r",
 							"\r",
 							"pm.test(\"Response time below 500ms\", () => {\r",
-							"  pm.expect(pm.response.responseTime).to.be.below(500);\r",
+							"  pm.expect(pm.response.responseTime).to.be.below(50);\r",
 							"})"
 						],
 						"type": "text/javascript"
