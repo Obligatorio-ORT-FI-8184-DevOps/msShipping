@@ -59,7 +59,7 @@
 							"    pm.expect(responseJson.id).to.be.a('string');\r",
 							"})\r",
 							"\r",
-							"pm.test(\"Response time below 500ms\", () => {\r",
+							"pm.test(\"Response time below 50ms\", () => {\r",
 							"  pm.expect(pm.response.responseTime).to.be.below(50);\r",
 							"})"
 						],
